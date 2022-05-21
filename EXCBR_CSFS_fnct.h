@@ -94,24 +94,25 @@ typedef int cs_ptrc_sz_ptrc_to_int(void*, size_t, char*);
 extern int find_first_occurence(void * buf, size_t count, char * pattern);
 
 // generic function pointer used to store all the supported function ptr
-typedef int (*cs_fp)(void);
+typedef void* (*cs_fptr)(void);
 // using c99 partial array initialization to register implemented function 
 
-int (*cs_cmdlong[CS_FNCT_END])(void *, size_t) = { 
-        [CS_COUNT_VOWEL]= count_vowel,
-        [CS_COUNT_CONSONANT] 	= count_consonant,	
- 	[CS_MAX] 	= cs_nop, 	
-	[CS_MIN] 	= cs_nop, 
-	[CS_SUM] 	= cs_nop, 
-	[CS_PROD] 	= cs_nop,
-	[CS_LAND] 	= cs_nop, 
-	[CS_LOR]  	= cs_nop,
-	[CS_BAND] 	= cs_nop, 
-	[CS_BOR]	= cs_nop,
-	[CS_MAXLOC] 	= cs_nop, 	
-	[CS_MINLOC] 	= cs_nop,
- 	[CS_AVG]	= cs_average,
-        [CS_FIND_FIRST_OCCURENCE] = cs_nop,
+//int (*cs_cmdlong[CS_FNCT_END])(void *, size_t) = { 
+cs_fptr cs_cmdlong[CS_FNCT_END] = { 
+        [CS_COUNT_VOWEL]= (cs_fptr) count_vowel,
+        [CS_COUNT_CONSONANT] 	= (cs_fptr) count_consonant,	
+ 	[CS_MAX] 	= (cs_fptr) cs_nop, 	
+	[CS_MIN] 	= (cs_fptr) cs_nop, 
+	[CS_SUM] 	= (cs_fptr) cs_nop, 
+	[CS_PROD] 	= (cs_fptr) cs_nop,
+	[CS_LAND] 	= (cs_fptr) cs_nop, 
+	[CS_LOR]  	= (cs_fptr) cs_nop,
+	[CS_BAND] 	= (cs_fptr) cs_nop, 
+	[CS_BOR]	= (cs_fptr) cs_nop,
+	[CS_MAXLOC] 	= (cs_fptr) cs_nop, 	
+	[CS_MINLOC] 	= (cs_fptr) cs_nop,
+ 	[CS_AVG]	= (cs_fptr) cs_average,
+        [CS_FIND_FIRST_OCCURENCE] = (cs_fptr) cs_nop,
 }; 
 
 int (*cs_cmd[2])(void *, size_t) = {count_vowel, count_consonant};
