@@ -751,7 +751,7 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	int res = -1;
 	int ret = -1;
 	int ires = 0;
-	int dres = 0;
+	double dres = 0;
 
 	read_bf = malloc(1 + my_cs->in_bfsz);
         ret = pread(fi->fh, read_bf, my_cs->in_bfsz, 0);
@@ -765,8 +765,7 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 		{
 			case CS_UNDEF:
 				fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: read and display file content (%d byte) ondebug log:\n %s\n",  my_cs->in_bfsz, read_bf);
-				fuse_reply_ioctl(req, EINVAL, NULL , 0);
-				return;
+				goto err1;
 				break;
 
 			case CS_COUNT_VOWEL:
@@ -790,7 +789,6 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 					out_buf.type_t = CS_INT_32;
 					}
 				if (my_cs->type_t == CS_DOUBLE_64)
-
 					{
 					fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL AVG DOUBLE \n");
 	   	   			dres =  d_cs_average((double *)read_bf, my_cs->in_bfsz / sizeof(double));
@@ -812,7 +810,7 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 				fuse_reply_ioctl(req, EINVAL, NULL , 0);
 				return;
 		}
-	
+err1:	
 	fuse_reply_ioctl(req, EINVAL, NULL , 0);
 }
 

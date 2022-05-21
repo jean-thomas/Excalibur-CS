@@ -16,11 +16,12 @@
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "EXCBR_CSFS_fnct.h"
+#include "EXCBR_cs_client_app_helper.h"
 
 const char *usage =
-"Usage: mini_cs_client file\n"
+"Usage: ./EXCBR_csfs_client file\n"
 "\n"
 "Get size if <size> is omitted, set size otherwise\n"
 "\n";
@@ -32,15 +33,15 @@ int main(int argc, char **argv)
 	int ret = 0;
 	char filename[PATH_MAX];
 	struct stat file_stat;
-	char buf[PATH_MAX];
-	struct cs_fct_args_t cs_ioctl_args;
+	char *buf;
+	struct cs_args_t cs_compad;
 
 	if (argc < 2) {
 		fprintf(stderr, "%s", usage);
+		// cs_help_fnct();
 		return 1;
 	}
 
-	cs_help_fnct();
 	strcpy(filename, argv[1]);
 	printf ("Opening file %s \n", filename);
 	fd = open(filename, O_RDWR);
@@ -51,9 +52,10 @@ int main(int argc, char **argv)
 
 	fstat(fd, &file_stat);
 	printf ("%s is %ld byte long\n", filename, file_stat.st_size);
-	if (file_stat.st_size > PATH_MAX) {
-		file_stat.st_size = PATH_MAX;
-		printf ("File is too large, read buffer size capped to %d \n", PATH_MAX);
+	buf = (char*)malloc(file_stat.st_size);
+	if (buf == NULL){
+		perror("malloc");
+		return 1;
 	}
 
 	nb_byte = read(fd, buf, file_stat.st_size);
@@ -61,53 +63,52 @@ int main(int argc, char **argv)
 		perror("read");
 		return 1;
 	}
-	cs_ioctl_args.in_bfsz=nb_byte;
-	cs_ioctl_args.fct_id= CS_AVG;
-	cs_ioctl_args.type_t= CS_INT_32;
-	printf ("Proceeding to IOCTL on file %s no function specified will be processed as a read \n", filename);
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
+	cs_compad.in_bfsz=nb_byte;
+	cs_compad.fct_id= CS_AVG;
+	cs_compad.type_t= CS_INT_32;
+	printf ("Proceeding to IOCTL Average as integer value on file %s\n", filename);
+	ret = ioctl(fd, CS_OPT, &cs_compad);
 	printf ("Return value of UNDEF IOCTL set to %d \n", ret);
-	printf ("Result for average of %s set to %d \n", filename, (int) cs_ioctl_args.out_bf[0]);
+	printf ("Result for average of %s set to %d \n", filename, (int) cs_compad.out_bf[0]);
 
-	cs_ioctl_args.in_bfsz=nb_byte;
-	cs_ioctl_args.fct_id= CS_AVG;
-	cs_ioctl_args.type_t= CS_DOUBLE_64;
-	printf ("Proceeding to IOCTL on file %s no function specified will be processed as a read \n", filename);
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
-	printf ("Result for average of %s set to %f \n", filename, (double) cs_ioctl_args.out_bf[0]);
+	cs_compad.in_bfsz=nb_byte;
+	cs_compad.fct_id= CS_AVG;
+	cs_compad.type_t= CS_DOUBLE_64;
+	printf ("Proceeding to IOCTL Average as double value on file %s\n", filename);
+	ret = ioctl(fd, CS_OPT, &cs_compad);
+	printf ("Result for average of %s set to %f \n", filename, (double) cs_compad.out_bf[0]);
 
 	close(fd);
 	return ret;
 
-	cs_ioctl_args.in_bfsz=nb_byte;
-	cs_ioctl_args.fct_id= CS_UNDEF;
+	cs_compad.in_bfsz=nb_byte;
+	cs_compad.fct_id= CS_UNDEF;
 	printf ("Proceeding to IOCTL on file %s no function specified will be processed as a read \n", filename);
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
+	ret = ioctl(fd, CS_OPT, &cs_compad);
 	printf ("Return value of UNDEF IOCTL set to %d \n", ret);
 
 	printf ("Proceeding to IOCTL on file %s using **count vowel** function \n", filename);
-	cs_ioctl_args.in_bfsz=nb_byte;
-	cs_ioctl_args.type_t=CS_CHAR;
-	cs_ioctl_args.fct_id= CS_COUNT_VOWEL;
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
-	printf ("IOCTL COUNT VOWEL return code: %d resumt: %ld\n", ret, cs_ioctl_args.out_bf[0]);
+	cs_compad.in_bfsz=nb_byte;
+	cs_compad.type_t=CS_CHAR;
+	cs_compad.fct_id= CS_COUNT_VOWEL;
+	ret = ioctl(fd, CS_OPT, &cs_compad);
+	printf ("IOCTL COUNT VOWEL return code: %d resumt: %ld\n", ret, cs_compad.out_bf[0]);
 
 	printf ("Proceeding to IOCTL on file %s using **count consonant** function \n", filename);
-	cs_ioctl_args.in_bfsz=nb_byte;
-	cs_ioctl_args.fct_id= CS_COUNT_CONSONANT;
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
-	printf ("IOCTL COUNT CONSONANT return code: %d  result: %ld\n", ret, cs_ioctl_args.out_bf[0]);
+	cs_compad.in_bfsz=nb_byte;
+	cs_compad.fct_id= CS_COUNT_CONSONANT;
+	ret = ioctl(fd, CS_OPT, &cs_compad);
+	printf ("IOCTL COUNT CONSONANT return code: %d  result: %ld\n", ret, cs_compad.out_bf[0]);
 
 	/*
 	printf ("Proceeding to IOCTL on file %s using **Find first occurrence ** function \n", filename);
-	cs_ioctl_args.fct_id= CS_FIND_FIRST_OCCURENCE;
-	cs_ioctl_args.ext_arg= 1;
+	cs_compad.fct_id= CS_FIND_FIRST_OCCURENCE;
+	cs_compad.ext_arg= 1;
 	char * my_pattern = strdup("text");
-	cs_ioctl_args.ext_arg= 1;
-	cs_ioctl_args.arglist= my_pattern;
-	ret = ((cs_ptrc_sz_ptrc_to_int *) cs_cmd[cs_ioctl_args.fct_id])(buf, nb_byte, my_pattern);
+	cs_compad.ext_arg= 1;
+	cs_compad.arglist= my_pattern;
+	ret = ioctl(fd, CS_OPT, &cs_compad);
 	printf ("Find first occurence direct call returns: %d \n", ret);
-	ret = ioctl(fd, CS_READ, &cs_ioctl_args);
 	printf ("\nEnd of IOCTL on file %s \n", filename);
 	*/
 	close(fd);
