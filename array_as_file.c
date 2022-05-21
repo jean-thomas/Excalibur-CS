@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 			for (size_t i = 0; i < count ; ++i)
 			{
 				// for debugging purpose, we do not use random data
-				double dval = i + 0.1;
+				double dval = ((double) i) / 10;
     				fwrite(&dval, sizeof(double), 1, fptr);
 			}
 		}
