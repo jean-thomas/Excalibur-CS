@@ -745,73 +745,81 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 {
 
         /* read in arg */
-	struct cs_fct_args_t const *my_cs =  (struct cs_fct_args_t *)in_buf;
-	struct cs_fct_args_t out_buf;
+	struct cs_args_t const *my_cs =  (struct cs_args_t *)in_buf;
+	struct cs_args_t out_buf;
 	char *read_bf;
-	int res = -1;
-	int ret = -1;
-	int ires = 0;
-	double dres = 0;
 
 	read_bf = malloc(1 + my_cs->in_bfsz);
-        ret = pread(fi->fh, read_bf, my_cs->in_bfsz, 0);
-	if (ret == -1)
-		{
+	size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, 0);
+	if (length == -1) {
+		free (read_bf);
 		fuse_reply_ioctl(req, ENOSYS, NULL , 0);
 		return;
-		}
-	read_bf[ret] = '\0';
-	switch (my_cs->fct_id)
-		{
-			case CS_UNDEF:
-				fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: read and display file content (%d byte) ondebug log:\n %s\n",  my_cs->in_bfsz, read_bf);
-				goto err1;
-				break;
+	}
+	read_bf[length] = '\0'; // added just in case we want to display result on screen
+	/*
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
+	*/
 
-			case CS_COUNT_VOWEL:
-			case CS_COUNT_CONSONANT:
-				// casting the function pointer to the cs type: res = int, operands = buffer, size_t
-	   	   		res =  ((cs_ptrc_sz_to_int *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-				fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL RESULT: %d\n", res);
-				out_buf.out_bf[0] = res;
-				fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_fct_args_t));
-				return;
-				break;
+	if ((my_cs->fct_id <= CS_UNDEF) || (my_cs->fct_id >= CS_FNCT_END)) {
+		fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
+		out_buf.type_t = CS_DOUBLE_64;
+	   	out_buf.out_bf.ui64 = ((cs_cptr_ui64_to_ui64*) cs_cmd[CS_NOP])(read_bf, my_cs->in_bfsz);
+		free (read_bf);
+		fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
+		return;
+	}
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n", my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
+	// Calling the asked function and apply the cast in respect of type results and functiona arguments type
+	switch (my_cs->type_t) {
+		case CS_CHAR:
+   	   		out_buf.out_bf.c = ((cs_cptr_ui64_to_c *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: char : result set to %c\n", out_buf.out_bf.c);
+			break;
 
-			case CS_AVG:
-				if (my_cs->type_t == CS_INT_32)
-					{
-					fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL AVG INT \n");
-	   	   			ires =  i_cs_average((int *)read_bf, my_cs->in_bfsz / sizeof(int));
-	   	   			// ires =  ((cs_ptrc_sz_to_int *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz / sizeof(int));
-					fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL AVG INT RESULT: %d\n", ires);
-					out_buf.out_bf[0] = ires;
-					out_buf.type_t = CS_INT_32;
-					}
-				if (my_cs->type_t == CS_DOUBLE_64)
-					{
-					fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL AVG DOUBLE \n");
-	   	   			dres =  d_cs_average((double *)read_bf, my_cs->in_bfsz / sizeof(double));
-					fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: IOCTL AVG DOUBLE RESULT: %f\n", dres);
-					out_buf.out_bf[0] = dres;
-					out_buf.type_t = CS_DOUBLE_64;
-					}
-				fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_fct_args_t));
-				return;
-				break;
+		case CS_INT_32:
+   	   		out_buf.out_bf.i32 = ((cs_cptr_ui64_to_i32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 32 : result set to %d\n", out_buf.out_bf.i32);
+			break;
+		case CS_INT_64:
+   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_i64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 64 : result set to %d\n", out_buf.out_bf.i64);
+			break;
 
-			case CS_FIND_FIRST_OCCURENCE:
-	   	   		res = ((cs_ptrc_sz_ptrc_to_int *)cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz, "text");
-				fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: find first occurence: %d\n", res);
-				return;
-				break;
-			default:
-				fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
-				fuse_reply_ioctl(req, EINVAL, NULL , 0);
-				return;
-		}
-err1:	
-	fuse_reply_ioctl(req, EINVAL, NULL , 0);
+		case CS_UINT_32:
+   	   		out_buf.out_bf.ui32 = ((cs_cptr_ui64_to_ui32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 32 : result set to %i\n", out_buf.out_bf.ui32);
+			break;
+
+		case CS_UINT_64:
+   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_ui64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 64 : result set to %ld\n", (size_t) out_buf.out_bf.ui64);
+			break;
+
+		case CS_FLOAT_32:
+   	   		out_buf.out_bf.f32 =  ((cs_cptr_ui64_to_f32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: float32 : result store as %f\n", out_buf.out_bf.f32);
+			break;
+
+		case CS_DOUBLE_64:
+   	   		out_buf.out_bf.d64 =  ((cs_cptr_ui64_to_d64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: double 64 : result store as %f\n", out_buf.out_bf.d64);
+			break;
+		default:
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported output type: %d\n", my_cs->type_t);
+   	   		out_buf.out_bf.i32 = 0;
+   	   		out_buf.type_t = my_cs->type_t;
+			free (read_bf);
+			fuse_reply_ioctl(req, EINVAL, NULL , 0);
+			return;
+	}
+	// send response to caller
+  	out_buf.type_t = my_cs->type_t;
+	free (read_bf);
+	fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
 }
 
 static void lo_flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)

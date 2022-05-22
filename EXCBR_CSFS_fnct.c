@@ -15,7 +15,7 @@ bool is_vowel(char c)
 		return true;
 	return false;
 }
-int count_vowel(void * buf, size_t count)
+size_t count_vowel(void * buf, size_t count)
 {
         uint64_t i;
         size_t vow=0;
@@ -29,7 +29,7 @@ int count_vowel(void * buf, size_t count)
         return vow;
 }
 
-int count_consonant(void * buf, size_t count)
+size_t count_consonant(void * buf, size_t count)
 {
         uint64_t i;
         size_t cons=0;
@@ -42,12 +42,17 @@ int count_consonant(void * buf, size_t count)
         return cons;
 }
 
+size_t cs_nop(int * buf, size_t count)
+{
+        return (int)count;
+}
 
-int cs_average(void * buf, size_t count)
+int i_cs_average(char * buf, size_t length)
 {
 	size_t i;
-	int *my_buf = (int *) buf;
 	int avg = 0;
+	int * my_buf = (int *) buf;
+	size_t count = length / sizeof(int);
 
 	if (count == 0)
 		return 0;
@@ -57,36 +62,18 @@ int cs_average(void * buf, size_t count)
         {
                 avg += my_buf[i];
         }
+	fprintf(stderr, "i_cs_average: sum %i\n", avg);
 	avg /= count;
+	fprintf(stderr, "i_cs_average: results %d\n", avg);
         return avg;
 }
 
-int cs_nop(int * buf, size_t count)
-{
-        return (int)count;
-}
-
-int i_cs_average(int * buf, size_t count)
-{
-	size_t i;
-	int avg = 0;
-
-	if (count == 0)
-		return 0;
-
-	fprintf(stderr, "Computing integer average value for an array of %ld elements\n", count);
-        for (i = 0; i < count; i++)
-        {
-                avg += buf[i];
-        }
-	avg /= count;
-        return avg;
-}
-
-double d_cs_average(double * buf, size_t count)
+double d_cs_average(char * buf, size_t length)
 {
 	size_t i;
 	double avg = 0;
+	double * my_buf = (double *) buf;
+	size_t count = length / sizeof(double);
 
 	if (count == 0)
 		return 0;
@@ -94,13 +81,15 @@ double d_cs_average(double * buf, size_t count)
 	fprintf(stderr, "Computing double average value for an array of %ld elements\n", count);
         for (i = 0; i < count; i++)
         {
-                avg += buf[i];
+                avg += my_buf[i];
         }
-	avg /= count;
+	fprintf(stderr, "d_cs_average: sum %f\n", avg);
+	avg = ((double) avg) / count;
+	fprintf(stderr, "d_cs_average: results %f\n", avg);
         return avg;
 }
 
-int find_first_occurence(void * buf, size_t count, char * pattern)
+size_t find_first_occurence(void * buf, size_t count, char * pattern)
 {
         char *ptr;
 	char * my_buf = (char *) buf;
@@ -110,5 +99,3 @@ int find_first_occurence(void * buf, size_t count, char * pattern)
                 return (ptr - my_buf);
         else return 0;
 }
-
-
