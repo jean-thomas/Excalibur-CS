@@ -33,10 +33,10 @@ static struct cs_config {
         const char *cs;
 } cs_config;
 
-#define CS_OPT(t, p)                           \
+#define CS_OPTION(t, p)                           \
     { t, offsetof(struct cs_config, p), 1 }
 static const struct fuse_opt cs_options[] = {
-        CS_OPT("--cs=%s", cs),
+        CS_OPTION("--cs=%s", cs),
         FUSE_OPT_END
 };
 
@@ -749,6 +749,20 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	struct cs_args_t out_buf;
 	char *read_bf;
 
+	switch(cmd){	
+		case CS_OPT:
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
+			break;
+	        default:
+			fuse_log(FUSE_LOG_DEBUG, "\n non cs ioctl: exiting \n");
+			fuse_reply_ioctl(req, EINVAL, NULL , 0);
+            		return;
+	}
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
+
 	read_bf = malloc(1 + my_cs->in_bfsz);
 	size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, 0);
 	if (length == -1) {
@@ -757,12 +771,6 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 		return;
 	}
 	read_bf[length] = '\0'; // added just in case we want to display result on screen
-	/*
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
-	*/
 
 	if ((my_cs->fct_id <= CS_UNDEF) || (my_cs->fct_id >= CS_FNCT_END)) {
 		fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
