@@ -24,6 +24,7 @@
 #include <sys/xattr.h>
 
 #include "EXCBR_CSFS_fnct.h"
+int cs_status;
 
 /*
  * Command line options for Computational Storage File System
@@ -783,6 +784,12 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n", my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
 	// Calling the asked function and apply the cast in respect of type results and functiona arguments type
 	switch (my_cs->type_t) {
+/*
+		case CS_VOID:
+   	   		((cs_int_to_voidc *) cs_cmd[my_cs->fct_id])(read_bf);
+			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: function with void return value\n", out_buf.out_bf.c);
+			break;
+*/
 		case CS_CHAR:
    	   		out_buf.out_bf.c = ((cs_cptr_ui64_to_c *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: char : result set to %c\n", out_buf.out_bf.c);
@@ -872,6 +879,8 @@ int main(int argc, char *argv[])
 	struct fuse_loop_config config;
 	struct lo_data lo = { .debug = 0 };
 	int ret = -1;
+
+    cs_set_status(CS_ON);
 
 	/* Don't mask creation mode, kernel already did that */
 	umask(0);

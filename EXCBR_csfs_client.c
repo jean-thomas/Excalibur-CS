@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <getopt.h>
 
-#include "EXCBR_cs_app_helper.h"
+#include "EXCBR_common.h"
 
 void print_help(char * prog)
 {
@@ -85,6 +85,19 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
+
+    int status = cs_get_status();
+    if((status != CS_ON) && (status != CS_OFF)){
+        fprintf(stderr, "Computational Storage Status Error: %d \n", status);
+        exit(EXIT_FAILURE);
+    }
+
+    if (status == CS_ON){
+	    printf ("Computational storage status: %d set to ON\n", status);
+    }
+    if (status == CS_OFF){
+	    printf ("Computational storage status: %d set to OFF\n", status);
+    }
 	strcpy(filename, argv[optind]);
 	printf ("Opening file %s \n", filename);
 	fd = open(filename, O_RDWR);

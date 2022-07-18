@@ -32,6 +32,8 @@ typedef void* (*cs_fptr)(void);
  * declated as generic function pointer the function array
  */
 typedef char 	 cs_cptr_ui64_to_c  	(char*, size_t);
+typedef void 	 cs_int_to_void      	(int);
+typedef int 	 cs_void_to_i32 	    (void);
 typedef int 	 cs_cptr_ui64_to_i32 	(char*, size_t);
 typedef long int cs_cptr_ui64_to_i64 	(char*, size_t);
 typedef uint32_t cs_cptr_ui64_to_ui32 	(char*, size_t);

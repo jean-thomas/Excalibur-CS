@@ -32,6 +32,8 @@ enum CS_FNCT_ID {
         CS_UNDEF = -1,
         CS_COUNT_VOWEL,         // returns the number of char elt being vowel
         CS_COUNT_CONSONANT,     // Returns the number of char elt being consonant
+        CS_GET_STATUS,          // Returns the current status of the CS feature, either enable or desable
+        CS_SET_STATUS,          // Set the status of the CS feature, either to ON or OFF
         CS_MAX,                 // Returns the maximum element.
         CS_MIN,                 // Returns the minimum element.
         CS_SUM,                 // Sums the elements.
@@ -53,6 +55,8 @@ enum CS_FNCT_ID {
 const char *CS_FNCT_NAME[CS_FNCT_END] = {
         [CS_COUNT_VOWEL]= "CS_COUNT_VOWEL",
         [CS_COUNT_CONSONANT] = "CS_COUNT_CONSONANT",
+        [CS_GET_STATUS] = "CS_GET_STATUS",
+        [CS_SET_STATUS] = "CS_SET_STATUS",
         [CS_MAX]        = "CS_MAX",
         [CS_MIN]        = "CS_MIN",
         [CS_SUM]        = "CS_SUM",
@@ -72,6 +76,8 @@ const char *CS_FNCT_NAME[CS_FNCT_END] = {
 const char *CS_FNCT_DESC[CS_FNCT_END] ={
         [CS_COUNT_VOWEL] ="returns the number of char elt being vowel",
         [CS_COUNT_CONSONANT] = "Returns the number of char elt being consonant",
+        [CS_GET_STATUS] = "Set the status of Computational Storage either to CS_ON or CS_OFF",
+        [CS_SET_STATUS] = "Retrieve the current status of Compuational Storage, either CS_ON or CS_OFF",
         [CS_MAX]        = "Returns the maximum element.",
         [CS_MIN]        = "Returns the minimum element.",
         [CS_SUM]        = "Sums the elements.",
@@ -100,6 +106,26 @@ void cs_help_fnct()
                 printf ("Name: %20s \t -- %s\n",CS_FNCT_NAME[i], CS_FNCT_DESC[i]);
         }
 }
+
+/*
+ * These definitions are own independently by both client ans server.
+ * Which means that clients do not communicate with server to check if 
+ * if Computational Storage is active. This is a pure place holder / mock-up function
+ */
+#define CS_ON 1
+#define CS_OFF 0
+int cs_status;
+void cs_set_status(int val)
+{
+    cs_status = val;
+    return;
+}
+
+int cs_get_status(void)
+{
+    return cs_status;
+}
+
 
 typedef enum cs_type {
         CS_CHAR,
