@@ -24,5 +24,5 @@ test:
 free:
 	fusermount -u -z TEST
 clean:
-	rm -f *.o app_using_cs EXCBR_csfs csfs_application
+	rm -f *.o array_as_file EXCBR_csfs csfs_application
 	fusermount -u -z TEST
