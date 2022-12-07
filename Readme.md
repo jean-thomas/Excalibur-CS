@@ -68,19 +68,33 @@ struct cs_args_t
 ### Files List
 
 - Readme.md, this file.
-- Makefile, builder for the binaries. DESCRIBE THE DIFFERENT OPTION HERE
-- EXCBR_csfs_client.c, client application using the computational storage function to accelerate processing.
+- Makefile, builder for the binaries. 
+    - make all: build all binaries, CSFS fuse daemon, CS application and a tool binaries used for debugging
+    - make run: launch the CSFS daemon using TEST and REPO as destination and source directories
+    - make test: launch unit tests to check the posix support of the CSFS daemon
+    - make free: unmount the fuse client mount point used by the CSFS daemon
+
+- multifile.py, simple python example to create a Zarr multifile
+- app_using_cs.c, client application using the computational storage function to accelerate processing.
 - EXCBR_common.h, definitions which are shared between the storage system and the client application. This
 includes the list of supported function (min, max, avg...) and the data type
 - EXCBR_CSFS_fnct.c, implementation of the computational storage functions. This implementation is only
 used by the Computational file system
-- EXCBR_CSFS.c, Fuse implementation of the computational storage file system.
+- EXCBR_CSFS.c, Fuse implementation of the computational storage daemon file system.
 - minitest_EXCBR_csfs.sh, simple test suite to validate the posix abilities of the fuse client
 - array_as_file.c, serialize/deserialize an array of various data type as a binary file.
-- hello_jt.py, simple test file for Zarr files
-- TEST, directory used to store Zarr files for testing purpose
+- REPO, Source directory used as playground for tests
+- TEST, Target directory used as playgroubd for tests
+- CSFS_Python, directory containing the files for python usage of CSFS daemon.
 
 
 ### Python, Zarr and Dask
+
+the CSFS_Python directory contains a proxy library and a Python toy example.
+The proxy lib is a dynamically linked wrapper around the ioctl and structure packing.
+This allows to call the C function from python. An example using the ActiveStorage Python
+framework from U. Readings is provided for illustrative purpose.
+
+
 
 
