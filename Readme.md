@@ -65,6 +65,16 @@ struct cs_args_t
         } cs_args;
 
 
+### Running a simple example
+
+Checking if CSFS can count the vowel from a text file containing the string "hello world"
+
+    /csfs_application -v TEST/test1.txt 
+    Opening file TEST/test1.txt 
+    TEST/test1.txt is 12 byte long
+    Proceeding to IOCTL CS_COUNT_VOWEL on file TEST/test1.txt
+    Result of: returns the number of char elt being vowel IOCTL on TEST/test1.txt set to 3
+
 ### Files List
 
 - Readme.md, this file.

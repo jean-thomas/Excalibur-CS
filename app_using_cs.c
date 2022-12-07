@@ -50,21 +50,21 @@ int main(int argc, char **argv)
         switch (opt) {
                 case 'v':
                         func = CS_COUNT_VOWEL;
-			type = CS_INT_64;
+			            type = CS_INT_64;
                         break;
                 case 'c':
                         func = CS_COUNT_CONSONANT;
-			type = CS_INT_64;
+			            type = CS_INT_64;
                         break;
                 case 'a':
                         if (!strcmp(optarg , "int") || !strcmp(optarg, "integer")){
                         	func = CS_AVG_INT;
-				type = CS_INT_32;
-			}
+				            type = CS_INT_32;
+			            }
                         if (!strcmp(optarg, "double")){
                         	func = CS_AVG_DOUBLE;
-				type = CS_DOUBLE_64;
-			}
+				            type = CS_DOUBLE_64;
+			            }
                         break;
                 case 'h':
                         print_help(argv[0]);
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
                         exit(EXIT_FAILURE);
                 default:
                         func = CS_NOP;
-			type = CS_INT_64;
+			            type = CS_INT_64;
                         break;
         }
 
@@ -86,6 +86,8 @@ int main(int argc, char **argv)
         }
 
 
+    /* set by the application, should be set by CSFS daemon */
+    cs_set_status(CS_ON);
     int status = cs_get_status();
     if((status != CS_ON) && (status != CS_OFF)){
         fprintf(stderr, "Computational Storage Status Error: %d \n", status);
@@ -123,6 +125,7 @@ int main(int argc, char **argv)
 	cs_compad.in_bfsz = nb_byte;
 	cs_compad.fct_id = func;
 	cs_compad.type_t = type;
+	cs_compad.offset = 0;
 	// the structure cs_compad is not preserved across ioctl call
 	ret = ioctl(fd, CS_OPT, &cs_compad);
 	type = cs_compad.type_t;
