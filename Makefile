@@ -4,12 +4,12 @@ CC=gcc
 SHELL := /bin/bash
 
 
-all: EXCBR_csfs EXCBR_csfs_client array_as_file
+all: EXCBR_csfs csfs_application array_as_file
 
 EXCBR_csfs: EXCBR_CSFS.c EXCBR_CSFS_fnct.c
 	$(CC) $^ -o $@ $(CFLAGS)
 
-EXCBR_csfs_client: EXCBR_csfs_client.c EXCBR_CSFS_fnct.c
+csfs_application: app_using_cs.c
 	$(CC) $^ -o $@ $(CFLAGS)
 
 array_as_file: array_as_file.c
@@ -24,5 +24,5 @@ test:
 free:
 	fusermount -u -z TEST
 clean:
-	rm -f *.o EXCBR_csfs_client EXCBR_csfs
+	rm -f *.o app_using_cs EXCBR_csfs csfs_application
 	fusermount -u -z TEST
