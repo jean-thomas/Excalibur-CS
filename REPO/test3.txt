@@ -1,5 +1,0 @@
-Hello World, this is a test
-The text is short, but the 
-purpose is just to validate
-the basic operation of the
-fuse client

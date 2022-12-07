@@ -10,7 +10,7 @@ reset_color(){
 # Tidy up function after tests execution
 cleaning_up() {
 	rm -f test_1.txt  
-	rm -f  test_2.txt  
+	rm -f test_2.txt  
 	rm -f test_3.txt
 	rm -f test_4.txt
 }
