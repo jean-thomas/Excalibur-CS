@@ -82,13 +82,56 @@ double d_cs_average(char * buf, size_t length)
         for (i = 0; i < count; i++)
         {
                 avg += my_buf[i];
-        }
-	fprintf(stderr, "d_cs_average: sum %f\n", avg);
-	avg = ((double) avg) / count;
-	fprintf(stderr, "d_cs_average: results %f\n", avg);
-        return avg;
+    }
+fprintf(stderr, "d_cs_average: sum %f\n", avg);
+avg = ((double) avg) / count;
+fprintf(stderr, "d_cs_average: results %f\n", avg);
+    return avg;
 }
 
+double d_cs_min(char * buf, size_t length)
+{
+	size_t i;
+	double min = 0;
+	double * my_buf = (double *) buf;
+	size_t count = length / sizeof(double);
+
+	if (count == 0)
+		return 0;
+    
+    min = my_buf[0];
+    for (i = 0; i < count; i++)
+    {
+	fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
+        if (min > my_buf[i])
+            min = my_buf[i];
+    }
+
+	fprintf(stderr, "d_cs_min: min %f\n", min);
+    return min;
+}
+
+double d_cs_max(char * buf, size_t length)
+{
+	size_t i;
+	double max = 0;
+	double * my_buf = (double *) buf;
+	size_t count = length / sizeof(double);
+
+	if (count == 0)
+		return 0;
+    
+    max = my_buf[0];
+    for (i = 0; i < count; i++)
+    {
+	fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
+        if (max < my_buf[i])
+            max = my_buf[i];
+    }
+
+	fprintf(stderr, "d_cs_max: max %f\n", max);
+    return max;
+}
 size_t find_first_occurence(void * buf, size_t count, char * pattern)
 {
         char *ptr;

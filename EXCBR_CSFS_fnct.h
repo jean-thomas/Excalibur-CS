@@ -21,6 +21,8 @@ extern size_t count_vowel (void* buf, size_t count);
 extern size_t count_consonant(void* buf, size_t count);
 extern int i_cs_average(int* buf, size_t count);
 extern double d_cs_average(double* buf, size_t count);
+extern double d_cs_min(void* buf, size_t count);
+extern double d_cs_max(void* buf, size_t count);
 extern int find_first_occurence(void * buf, size_t count, char * pattern);
 extern int cs_nop(void* buf, size_t count); // this function just return the number of byte read
 
@@ -46,19 +48,19 @@ typedef double 	 cs_cptr_ui64_to_d64 	(char*, size_t);
 cs_fptr cs_cmd[CS_FNCT_END] = { 
         [CS_COUNT_VOWEL]= (cs_fptr) count_vowel,
         [CS_COUNT_CONSONANT] 	= (cs_fptr) count_consonant,	
- 	[CS_MAX] 	= (cs_fptr) cs_nop, 	
-	[CS_MIN] 	= (cs_fptr) cs_nop, 
-	[CS_SUM] 	= (cs_fptr) cs_nop, 
-	[CS_PROD] 	= (cs_fptr) cs_nop,
-	[CS_LAND] 	= (cs_fptr) cs_nop, 
-	[CS_LOR]  	= (cs_fptr) cs_nop,
-	[CS_BAND] 	= (cs_fptr) cs_nop, 
-	[CS_BOR]	= (cs_fptr) cs_nop,
-	[CS_MAXLOC] 	= (cs_fptr) cs_nop, 	
-	[CS_MINLOC] 	= (cs_fptr) cs_nop,
- 	[CS_AVG_INT]	= (cs_fptr) i_cs_average,
- 	[CS_AVG_DOUBLE]	= (cs_fptr) d_cs_average,
- 	[CS_NOP]	= (cs_fptr) cs_nop,
+ 	    [CS_MAX] 	= (cs_fptr) d_cs_max, 	
+	    [CS_MIN] 	= (cs_fptr) d_cs_min, 
+	    [CS_SUM] 	= (cs_fptr) cs_nop, 
+	    [CS_PROD] 	= (cs_fptr) cs_nop,
+	    [CS_LAND] 	= (cs_fptr) cs_nop, 
+	    [CS_LOR]  	= (cs_fptr) cs_nop,
+	    [CS_BAND] 	= (cs_fptr) cs_nop, 
+	    [CS_BOR]	= (cs_fptr) cs_nop,
+	    [CS_MAXLOC] 	= (cs_fptr) cs_nop, 	
+	    [CS_MINLOC] 	= (cs_fptr) cs_nop,
+ 	    [CS_AVG_INT]	= (cs_fptr) i_cs_average,
+ 	    [CS_AVG_DOUBLE]	= (cs_fptr) d_cs_average,
+ 	    [CS_NOP]	= (cs_fptr) cs_nop,
         [CS_FIND_FIRST_OCCURENCE] = (cs_fptr) cs_nop,
 }; 
 

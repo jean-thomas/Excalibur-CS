@@ -160,6 +160,7 @@ struct cs_args_t
         CS_FNCT_ID fct_id;
         CS_TYPE type_t;
         size_t in_bfsz;
+        size_t offset;
         size_t out_bfsz;
         CS_RET out_bf; // current return limit is a single elt
         } cs_args;

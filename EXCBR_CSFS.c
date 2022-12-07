@@ -762,10 +762,11 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: offset : %ld\n", my_cs->offset);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
 
 	read_bf = malloc(1 + my_cs->in_bfsz);
-	size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, 0);
+	size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
 	if (length == -1) {
 		free (read_bf);
 		fuse_reply_ioctl(req, ENOSYS, NULL , 0);
