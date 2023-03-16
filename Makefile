@@ -25,7 +25,7 @@ run:
 	./EXCBR_csfs -d -o source=REPO TEST
 
 test:
-	./mini_test_cs.sh TEST
+	./minitest_EXCBR_csfs.sh TEST
 
 free:
 	fusermount -u -z TEST

@@ -47,7 +47,6 @@ enum CS_FNCT_ID {
     CS_MINLOC,              //
     CS_AVG_INT,             // Return the average value for an array of integer
     CS_AVG_DOUBLE,          // Return the average value for an array of double
-    CS_FIND_FIRST_OCCURENCE,// Search function returning the position of the first occurence of a pattern
     CS_NOP,         // return the number of byte read
     CS_FNCT_END,            // marker of the last supported function
 };
@@ -85,26 +84,25 @@ static inline int cs_get_status(void)
     return cs_status;
 }
 
-
 typedef enum cs_type {
-    CS_CHAR,
-    CS_INT_32,
-    CS_INT_64,
-    CS_UINT_32,
-    CS_UINT_64,
-    CS_FLOAT_32,
-    CS_DOUBLE_64,
+        CS_CHAR,
+        CS_INT_32,
+        CS_INT_64,
+        CS_UINT_32,
+        CS_UINT_64,
+        CS_FLOAT_32,
+        CS_DOUBLE_64,
 } CS_TYPE;
 
 typedef union cs_ret {
-    char     c;
-    int      i32;
-    long int i64;
-    uint32_t ui32;
-    uint64_t ui64;
-    float    f32;
-    double   d64;
-    void*    ptr;
+        char 	 c;
+        int 	 i32;
+        long int i64;
+        uint32_t ui32;
+        uint64_t ui64;
+        float    f32;
+        double   d64;
+        void* 	 ptr;
 } CS_RET;
 
 /*
@@ -116,11 +114,11 @@ typedef union cs_ret {
  */
 extern struct cs_args_t {
     size_t  fct_id;
-    CS_TYPE type_t;
     size_t  in_bfsz;
     size_t  offset;
     size_t  out_bfsz;
-    CS_RET  out_bf; // current return limit is a single elt
+    CS_RET  out_bf;
+    int     status; // 0 for success, otherwise -1
 } cs_args;
 
 #ifdef __cplusplus

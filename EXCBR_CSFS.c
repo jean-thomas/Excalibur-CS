@@ -741,12 +741,12 @@ static void lo_lseek(fuse_req_t req, fuse_ino_t ino, off_t off, int whence,
 		fuse_reply_err(req, errno);
 }
 
-static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct fuse_file_info *fi, unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
+static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct fuse_file_info *fi, 
+					 unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
 {
-
-        /* read in arg */
+	/* read in arg */
 	struct cs_args_t const *my_cs =  (struct cs_args_t *)in_buf;
-	struct cs_args_t out_buf;
+	struct cs_args_t out_buf = *my_cs;
 	char *read_bf;
 
 	switch(cmd){
@@ -758,7 +758,6 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct 
 			fuse_reply_ioctl(req, EINVAL, NULL , 0);
        		return;
 	}
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: offset : %ld\n", my_cs->offset);
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
@@ -774,64 +773,16 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct 
 
 	if ((my_cs->fct_id <= CS_UNDEF) || (my_cs->fct_id >= CS_FNCT_END)) {
 		fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
-		out_buf.type_t = CS_DOUBLE_64;
-	   	cs_cmd[CS_NOP](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.ui64);
-		free (read_bf);
+		out_buf.status = -1;
 		fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
 		return;
 	}
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n", my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
 	// Calling the asked function and apply the cast in respect of type results and functiona arguments type
-	switch (my_cs->type_t) {
-/*
-		case CS_VOID:
-   	   		((cs_int_to_voidc *) cs_cmd[my_cs->fct_id])(read_bf);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: function with void return value\n", out_buf.out_bf.c);
-			break;
-*/
-		case CS_CHAR:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.c);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: char : result set to %c\n", out_buf.out_bf.c);
-			break;
 
-		case CS_INT_32:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i32);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 32 : result set to %d\n", out_buf.out_bf.i32);
-			break;
-		case CS_INT_64:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i64);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 64 : result set to %d\n", out_buf.out_bf.i64);
-			break;
+   	cs_cmd[my_cs->fct_id](my_cs, &out_buf, read_bf);
+	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: command executed");
 
-		case CS_UINT_32:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.ui32);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 32 : result set to %i\n", out_buf.out_bf.ui32);
-			break;
-
-		case CS_UINT_64:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i64);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 64 : result set to %ld\n", (size_t) out_buf.out_bf.ui64);
-			break;
-
-		case CS_FLOAT_32:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.f32);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: float32 : result store as %f\n", out_buf.out_bf.f32);
-			break;
-
-		case CS_DOUBLE_64:
-   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.d64);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: double 64 : result store as %f\n", out_buf.out_bf.d64);
-			break;
-		default:
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported output type: %d\n", my_cs->type_t);
-   	   		out_buf.out_bf.i32 = 0;
-   	   		out_buf.type_t = my_cs->type_t;
-			free (read_bf);
-			fuse_reply_ioctl(req, EINVAL, NULL , 0);
-			return;
-	}
-	// send response to caller
-  	out_buf.type_t = my_cs->type_t;
 	free (read_bf);
 	fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
 }

@@ -33,6 +33,7 @@ void print_help(char * prog)
     cs_help_fnct();
     return;
 }
+
 int main(int argc, char **argv)
 {
     int fd;
@@ -125,11 +126,9 @@ int main(int argc, char **argv)
     printf ("Proceeding to IOCTL %s on file %s\n", CS_FNCT_NAME[func], filename);
     cs_compad.in_bfsz = nb_byte;
     cs_compad.fct_id = func;
-    cs_compad.type_t = type;
     cs_compad.offset = 0;
     // the structure cs_compad is not preserved across ioctl call
     ret = ioctl(fd, CS_OPT, &cs_compad);
-    type = cs_compad.type_t;
     if (ret != 0) {
         perror("ioctl");
         exit(EXIT_FAILURE);
@@ -140,25 +139,25 @@ int main(int argc, char **argv)
             printf ("Result of: %s IOCTL on %s set to %c \n", CS_FNCT_DESC[func], filename, (int) cs_compad.out_bf.c);
             break;
         case CS_INT_32:
-            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, (int) cs_compad.out_bf.i32);
+            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.i32);
             break;
         case CS_INT_64:
-            printf ("Result of: %s IOCTL on %s set to %ld \n", CS_FNCT_DESC[func], filename, (long int) cs_compad.out_bf.i64);
+            printf ("Result of: %s IOCTL on %s set to %ld \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.i64);
             break;
         case CS_UINT_32:
-            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, (uint32_t) cs_compad.out_bf.ui32);
+            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.ui32);
             break;
         case CS_UINT_64:
-            printf ("Result of: %s IOCTL on %s set to %ld \n", CS_FNCT_DESC[func], filename, (uint64_t) cs_compad.out_bf.ui64);
+            printf ("Result of: %s IOCTL on %s set to %ld \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.ui64);
             break;
         case CS_FLOAT_32:
-            printf ("Result of: %s IOCTL on %s set to %f \n", CS_FNCT_DESC[func], filename, (float) cs_compad.out_bf.f32);
+            printf ("Result of: %s IOCTL on %s set to %f \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.f32);
             break;
         case CS_DOUBLE_64:
-            printf ("Result of: %s IOCTL on %s set to %f \n", CS_FNCT_DESC[func], filename, (double) cs_compad.out_bf.d64);
+            printf ("Result of: %s IOCTL on %s set to %f \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.d64);
             break;
         default:
-            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, (int) cs_compad.out_bf.i32);
+            printf ("Result of: %s IOCTL on %s set to %d \n", CS_FNCT_DESC[func], filename, cs_compad.out_bf.i32);
             break;
     }
 

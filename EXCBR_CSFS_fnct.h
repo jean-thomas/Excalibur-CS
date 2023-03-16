@@ -26,17 +26,16 @@ extern "C" {
  * List of implemented function
  */
 
-extern void count_vowel (int, ...);
-extern void count_consonant(int, ...);
-extern void i_cs_average(int, ...);
-extern void d_cs_average(int, ...);
-extern void d_cs_min(int, ...);
-extern void d_cs_max(int, ...);
-extern void find_first_occurence(int, ...);
-extern void cs_nop(int, ...); // this function just return the number of byte read
+extern void count_vowel (const struct cs_args_t *, struct cs_args_t *, void *);
+extern void count_consonant(const struct cs_args_t *, struct cs_args_t *, void *);
+extern void i_cs_average(const struct cs_args_t *, struct cs_args_t *, void *);
+extern void d_cs_average(const struct cs_args_t *, struct cs_args_t *, void *);
+extern void d_cs_min(const struct cs_args_t *, struct cs_args_t *, void *);
+extern void d_cs_max(const struct cs_args_t *, struct cs_args_t *, void *);
+extern void cs_nop(const struct cs_args_t *, struct cs_args_t *, void *); // this function just return the number of byte read
 
 // Generic function pointer used to store all the supported function ptr
-typedef void (*cs_fptr)(int, ...);
+typedef void (*cs_fptr)(const struct cs_args_t *, struct cs_args_t *, void *);
 
 extern cs_fptr cs_cmd[CS_FNCT_END];
 
