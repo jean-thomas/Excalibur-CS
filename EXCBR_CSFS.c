@@ -1,5 +1,5 @@
 /*
- *  Excalibur Computational Storage Fuse client 
+ *  Excalibur Computational Storage Fuse client
  *
  *  This file adapated from original work of Miklos Szeredi <miklos@szeredi.hu>
  */
@@ -24,7 +24,6 @@
 #include <sys/xattr.h>
 
 #include "EXCBR_CSFS_fnct.h"
-int cs_status;
 
 /*
  * Command line options for Computational Storage File System
@@ -547,7 +546,7 @@ static void lo_do_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 					err = errno;
 					goto error;
 				} else {  // End of stream
-					break; 
+					break;
 				}
 			}
 		}
@@ -579,11 +578,11 @@ static void lo_do_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 						    &st, nextoff);
 		}
 		if (entsize > rem) {
-			if (entry_ino != 0) 
+			if (entry_ino != 0)
 				lo_forget_one(req, entry_ino, 1);
 			break;
 		}
-		
+
 		p += entsize;
 		rem -= entsize;
 
@@ -642,7 +641,7 @@ static void lo_create(fuse_req_t req, fuse_ino_t parent, const char *name,
 		return (void) fuse_reply_err(req, errno);
 
 	fi->fh = fd;
-	
+
 	fi->keep_cache = 1;
 
 	err = lo_do_lookup(req, parent, name, &e);
@@ -742,7 +741,7 @@ static void lo_lseek(fuse_req_t req, fuse_ino_t ino, off_t off, int whence,
 		fuse_reply_err(req, errno);
 }
 
-static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg, struct fuse_file_info *fi, unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
+static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct fuse_file_info *fi, unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
 {
 
         /* read in arg */
@@ -750,7 +749,7 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	struct cs_args_t out_buf;
 	char *read_bf;
 
-	switch(cmd){	
+	switch(cmd){
 		case CS_OPT:
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 			break;
@@ -776,7 +775,7 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 	if ((my_cs->fct_id <= CS_UNDEF) || (my_cs->fct_id >= CS_FNCT_END)) {
 		fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
 		out_buf.type_t = CS_DOUBLE_64;
-	   	out_buf.out_bf.ui64 = ((cs_cptr_ui64_to_ui64*) cs_cmd[CS_NOP])(read_bf, my_cs->in_bfsz);
+	   	cs_cmd[CS_NOP](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.ui64);
 		free (read_bf);
 		fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
 		return;
@@ -791,36 +790,36 @@ static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg
 			break;
 */
 		case CS_CHAR:
-   	   		out_buf.out_bf.c = ((cs_cptr_ui64_to_c *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.c);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: char : result set to %c\n", out_buf.out_bf.c);
 			break;
 
 		case CS_INT_32:
-   	   		out_buf.out_bf.i32 = ((cs_cptr_ui64_to_i32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i32);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 32 : result set to %d\n", out_buf.out_bf.i32);
 			break;
 		case CS_INT_64:
-   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_i64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i64);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 64 : result set to %d\n", out_buf.out_bf.i64);
 			break;
 
 		case CS_UINT_32:
-   	   		out_buf.out_bf.ui32 = ((cs_cptr_ui64_to_ui32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.ui32);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 32 : result set to %i\n", out_buf.out_bf.ui32);
 			break;
 
 		case CS_UINT_64:
-   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_ui64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.i64);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 64 : result set to %ld\n", (size_t) out_buf.out_bf.ui64);
 			break;
 
 		case CS_FLOAT_32:
-   	   		out_buf.out_bf.f32 =  ((cs_cptr_ui64_to_f32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.f32);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: float32 : result store as %f\n", out_buf.out_bf.f32);
 			break;
 
 		case CS_DOUBLE_64:
-   	   		out_buf.out_bf.d64 =  ((cs_cptr_ui64_to_d64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
+   	   		cs_cmd[my_cs->fct_id](3, read_bf, my_cs->in_bfsz, &out_buf.out_bf.d64);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: double 64 : result store as %f\n", out_buf.out_bf.d64);
 			break;
 		default:
