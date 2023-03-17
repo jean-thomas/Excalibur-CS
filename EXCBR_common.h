@@ -27,7 +27,7 @@ extern "C" {
 
 /* Use 'E' as magic number */
 #define CS_MAGIC 'E'
-#define CS_OPT   _IOWR(CS_MAGIC, 1, cs_args)
+#define        CS_OPT       _IOWR(CS_MAGIC, 1, cs_args)
 
 enum CS_FNCT_ID {
     CS_UNDEF = 0,
