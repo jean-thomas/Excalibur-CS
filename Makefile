@@ -6,11 +6,14 @@ SHELL := /bin/bash
 
 all: EXCBR_csfs csfs_application array_as_file
 
-EXCBR_csfs: EXCBR_CSFS.c EXCBR_CSFS_fnct.o
+EXCBR_csfs: EXCBR_CSFS.c EXCBR_CSFS_fnct.o EXCBR_CS_exec.o
 	$(CC) $^ -o $@ $(CFLAGS)
 
 EXCBR_CSFS_fnct.o: EXCBR_CSFS_fnct.c EXCBR_CSFS_fnct.h EXCBR_common.h
 	$(CC) -c EXCBR_CSFS_fnct.c -o $@ $(CFLAGS)
+
+EXCBR_CS_exec.o: EXCBR_CS_exec.c EXCBR_CS_exec.h
+	$(CC) -c EXCBR_CS_exec.c -o $@ $(CFLAGS)
 
 app_using_cs.o: app_using_cs.c EXCBR_CSFS_fnct.o
 	$(CC) -c app_using_cs.c -o $@ $(CFLAGS)
