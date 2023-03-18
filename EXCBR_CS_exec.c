@@ -89,7 +89,7 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 			read_bf[length] = '\0'; // added just in case we want to display result on screen
 
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n",
-					 my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
+					 my_cs->fct_id, cs_get_fnct_desc(my_cs->fct_id));
 
 			cs_args_t out_buf = *my_cs;
 

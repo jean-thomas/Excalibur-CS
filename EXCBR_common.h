@@ -25,6 +25,17 @@ extern "C" {
 #include <string.h>
 #include <stdint.h>
 
+/*
+ * These definitions are own independently by both client ans server.
+ * Which means that clients do not communicate with server to check if
+ * if Computational Storage is active. This is a pure place holder / mock-up function
+ */
+#define CS_ON  1
+#define CS_OFF 0
+
+void cs_set_status(int val);
+int cs_get_status(void);
+
 /* Use 'E' as magic number */
 #define CS_MAGIC 'E'
 #define CS_OPT _IOWR(CS_MAGIC, 1, cs_args_t)
@@ -51,9 +62,8 @@ enum CS_FNCT_ID {
     CS_FNCT_END,            // marker of the last supported function
 };
 
-extern const char *CS_FNCT_NAME[CS_FNCT_END];
-
-extern const char *CS_FNCT_DESC[CS_FNCT_END];
+const char *cs_get_fnct_name(size_t);
+const char *cs_get_fnct_desc(size_t);
 
 /*
  * show list of supported function
@@ -62,26 +72,7 @@ static inline void cs_help_fnct()
 {
     printf ("Functions supported by Compuational Storage\n");
     for (int i = CS_UNDEF + 1 ; i < CS_FNCT_END ; i++)
-        printf ("Name: %20s \t -- %s\n",CS_FNCT_NAME[i], CS_FNCT_DESC[i]);
-}
-
-/*
- * These definitions are own independently by both client ans server.
- * Which means that clients do not communicate with server to check if
- * if Computational Storage is active. This is a pure place holder / mock-up function
- */
-#define CS_ON  1
-#define CS_OFF 0
-extern int cs_status;
-static inline void cs_set_status(int val)
-{
-    cs_status = val;
-    return;
-}
-
-static inline int cs_get_status(void)
-{
-    return cs_status;
+        printf ("Name: %20s \t -- %s\n", cs_get_fnct_name(i), cs_get_fnct_desc(i));
 }
 
 typedef enum cs_type {
