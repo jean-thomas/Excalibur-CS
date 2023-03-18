@@ -26,7 +26,7 @@
 void
 cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 {
-	struct cs_args_t const *my_cs =  (struct cs_args_t *)in_buf;
+	cs_args_t const *my_cs =  (cs_args_t *)in_buf;
 
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 	switch(my_cs->fct_id)
@@ -70,13 +70,13 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n",
 					 my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
 
-			struct cs_args_t out_buf = *my_cs;
+			cs_args_t out_buf = *my_cs;
 
 			cs_cmd[my_cs->fct_id](my_cs, &out_buf, read_bf);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: command executed");
 
 			free (read_bf);
-			fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
+			fuse_reply_ioctl(req, 0, &out_buf, sizeof(cs_args_t));
 			break;
 
 		default:

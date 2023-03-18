@@ -27,7 +27,7 @@ extern "C" {
 
 /* Use 'E' as magic number */
 #define CS_MAGIC 'E'
-#define CS_OPT _IOWR(CS_MAGIC, 1, cs_args)
+#define CS_OPT _IOWR(CS_MAGIC, 1, cs_args_t)
 
 enum CS_FNCT_ID {
     CS_UNDEF = 0,
@@ -112,14 +112,14 @@ typedef union cs_ret {
  * type of the operation to proceed on the
  * file descriptor
  */
-extern struct cs_args_t {
+typedef struct cs_args {
     size_t  fct_id;
     size_t  in_bfsz;
     size_t  offset;
     size_t  out_bfsz;
     CS_RET  out_bf;
     int     status; // 0 for success, otherwise -1
-} cs_args;
+} cs_args_t;
 
 #ifdef __cplusplus
 }

@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     char filename[PATH_MAX];
     struct stat file_stat;
     char *buf;
-    struct cs_args_t cs_compad;
+    cs_args_t cs_compad;
     size_t func;
     CS_TYPE type;
     int opt;

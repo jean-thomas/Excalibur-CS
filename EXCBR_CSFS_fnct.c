@@ -87,7 +87,7 @@ is_vowel(char c)
 }
 
 void
-count_vowel(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+count_vowel(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);
@@ -107,7 +107,7 @@ count_vowel(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
 }
 
 void
-count_consonant(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+count_consonant(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);
@@ -128,7 +128,7 @@ count_consonant(const struct cs_args_t *in_args, struct cs_args_t *out, void *da
 }
 
 void
-cs_nop(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+cs_nop(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     (void)in_args;
     (void)out;
@@ -136,7 +136,7 @@ cs_nop(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
 }
 
 void
-i_cs_average(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+i_cs_average(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);
@@ -166,7 +166,7 @@ i_cs_average(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
 }
 
 void
-d_cs_average(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+d_cs_average(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);
@@ -198,7 +198,7 @@ d_cs_average(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
 }
 
 void
-d_cs_min(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+d_cs_min(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);
@@ -225,7 +225,7 @@ d_cs_min(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
 }
 
 void
-d_cs_max(const struct cs_args_t *in_args, struct cs_args_t *out, void *data)
+d_cs_max(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
     assert(in_args);
     assert(out);

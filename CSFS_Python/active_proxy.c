@@ -6,11 +6,11 @@
 
 double storage_delegate_op(int fd, size_t offset, size_t sz, char *op)
 {
-    struct cs_args_t cs_args;
+    cs_args_t cs_args;
     double ret;
 
     // we would like to get the fd from Python
-    if (fcntl (fd, F_GETFD) == -1) 
+    if (fcntl (fd, F_GETFD) == -1)
         {
         perror("Corrupted file descriptor");
         exit(EXIT_FAILURE);
