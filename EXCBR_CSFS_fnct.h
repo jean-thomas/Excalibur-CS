@@ -37,8 +37,6 @@ extern void cs_nop(const cs_args_t *, cs_args_t *, void *); // this function jus
 // Generic function pointer used to store all the supported function ptr
 typedef void (*cs_fptr)(const cs_args_t *, cs_args_t *, void *);
 
-extern cs_fptr cs_cmd[CS_FNCT_END];
-
 #ifdef __cplusplus
 }
 #endif

@@ -55,27 +55,6 @@ const char *CS_FNCT_DESC[CS_FNCT_END] = {
     [CS_NOP]             = "Return the number of byte read",
 };
 
-cs_fptr cs_cmd[CS_FNCT_END] = {
-    [CS_UNDEF]           = cs_nop,
-    [CS_COUNT_VOWEL]     = count_vowel,
-    [CS_COUNT_CONSONANT] = count_consonant,
-    [CS_GET_STATUS]      = cs_nop,
-    [CS_SET_STATUS]      = cs_nop,
-    [CS_MAX]             = d_cs_max,
-    [CS_MIN]             = d_cs_min,
-    [CS_SUM]             = cs_nop,
-    [CS_PROD]            = cs_nop,
-    [CS_LAND]            = cs_nop,
-    [CS_LOR]             = cs_nop,
-    [CS_BAND]            = cs_nop,
-    [CS_BOR]             = cs_nop,
-    [CS_MAXLOC]          = cs_nop,
-    [CS_MINLOC]          = cs_nop,
-    [CS_AVG_INT]         = i_cs_average,
-    [CS_AVG_DOUBLE]      = d_cs_average,
-    [CS_NOP]             = cs_nop,
-};
-
 static inline bool
 is_vowel(char c)
 {
