@@ -11,9 +11,20 @@
 #include <assert.h>
 #include "EXCBR_CSFS_fnct.h"
 
-int cs_status;
+static int cs_status;
+void cs_set_status(int val)
+{
+    assert(val == CS_ON || val == CS_OFF);
+    cs_status = val;
+    return;
+}
 
-const char *CS_FNCT_NAME[CS_FNCT_END] = {
+int cs_get_status(void)
+{
+    return cs_status;
+}
+
+static const char *CS_FNCT_NAME[CS_FNCT_END] = {
     [CS_UNDEF]           = "CS_NOP",
     [CS_COUNT_VOWEL]     = "CS_COUNT_VOWEL",
     [CS_COUNT_CONSONANT] = "CS_COUNT_CONSONANT",
@@ -34,7 +45,7 @@ const char *CS_FNCT_NAME[CS_FNCT_END] = {
     [CS_NOP]             = "CS_NOP",
 };
 
-const char *CS_FNCT_DESC[CS_FNCT_END] = {
+static const char *CS_FNCT_DESC[CS_FNCT_END] = {
     [CS_UNDEF]           = "this is not supported",
     [CS_COUNT_VOWEL]     = "returns the number of char elt being vowel",
     [CS_COUNT_CONSONANT] = "Returns the number of char elt being consonant",
@@ -54,6 +65,20 @@ const char *CS_FNCT_DESC[CS_FNCT_END] = {
     [CS_AVG_DOUBLE]      = "Return the average value of length of byte seen as double",
     [CS_NOP]             = "Return the number of byte read",
 };
+
+const char *
+cs_get_fnct_name(size_t id)
+{
+    assert(CS_NOP + 1);
+    return CS_FNCT_NAME[id];
+}
+
+const char *
+cs_get_fnct_desc(size_t id)
+{
+    assert(id < CS_NOP + 1);
+    return CS_FNCT_DESC[id];
+}
 
 static inline bool
 is_vowel(char c)

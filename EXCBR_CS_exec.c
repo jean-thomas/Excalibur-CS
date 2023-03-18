@@ -2,10 +2,13 @@
  *  Excalibur Computational Storage ioctl internals
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #define FUSE_USE_VERSION 34
 
-#include <fuse_lowlevel.h>
+#include <fuse3/fuse_lowlevel.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,6 +25,7 @@
 #include <sys/xattr.h>
 
 #include "EXCBR_CSFS_fnct.h"
+#include "EXCBR_CS_exec.h"
 
 cs_fptr cs_cmd[CS_FNCT_END] = {
     [CS_UNDEF]           = cs_nop,
@@ -47,7 +51,7 @@ cs_fptr cs_cmd[CS_FNCT_END] = {
 void
 cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 {
-	cs_args_t const *my_cs =  (cs_args_t *)in_buf;
+	cs_args_t const *my_cs = in_buf;
 
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 	switch(my_cs->fct_id)
@@ -79,7 +83,7 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
 
 			char *read_bf = malloc(1 + my_cs->in_bfsz);
-			size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
+			ssize_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
 
 			if (length == -1) {
 				free (read_bf);
@@ -89,7 +93,7 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 			read_bf[length] = '\0'; // added just in case we want to display result on screen
 
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n",
-					 my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
+					 my_cs->fct_id, cs_get_fnct_desc(my_cs->fct_id));
 
 			cs_args_t out_buf = *my_cs;
 
