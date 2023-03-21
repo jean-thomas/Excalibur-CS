@@ -49,10 +49,8 @@ cs_fptr cs_cmd[CS_FNCT_END] = {
 };
 
 void
-cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
+cs_exec(fuse_req_t req, const cs_args_t *my_cs, void *read_bf)
 {
-	cs_args_t const *my_cs = in_buf;
-
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 	switch(my_cs->fct_id)
 	{
@@ -81,17 +79,6 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
    			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: offset : %ld\n", my_cs->offset);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
-
-			char *read_bf = malloc(1 + my_cs->in_bfsz);
-			ssize_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
-
-			if (length == -1) {
-				free (read_bf);
-				fuse_reply_ioctl(req, ENOSYS, NULL , 0);
-				return;
-			}
-			read_bf[length] = '\0'; // added just in case we want to display result on screen
-
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n",
 					 my_cs->fct_id, cs_get_fnct_desc(my_cs->fct_id));
 
@@ -99,8 +86,6 @@ cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
 
 			cs_cmd[my_cs->fct_id](my_cs, &out_buf, read_bf);
 			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: command executed");
-
-			free (read_bf);
 			fuse_reply_ioctl(req, 0, &out_buf, sizeof(cs_args_t));
 			break;
 

@@ -745,11 +745,26 @@ static void lo_lseek(fuse_req_t req, fuse_ino_t ino, off_t off, int whence,
 static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct fuse_file_info *fi,
 					 unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
 {
-	switch(cmd)
+	switch (cmd)
 	{
 		case CS_OPT:
-			cs_exec(req, fi, in_buf);
+			const cs_args_t *my_cs = (const cs_args_t *)in_buf;
+
+			void *read_bf = malloc(1 + my_cs->in_bfsz);
+			ssize_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
+
+			if (length == -1)
+			{
+				free (read_bf);
+				fuse_reply_ioctl(req, ENOSYS, NULL , 0);
+				return;
+			}
+
+			cs_exec(req, in_buf, read_bf);
+
+			free(read_bf);
 			break;
+
 		default:
 			fuse_log(FUSE_LOG_DEBUG, "\nioctl cmdno: %d non existing: exiting \n", cmd);
 			fuse_reply_ioctl(req, EINVAL, NULL , 0);

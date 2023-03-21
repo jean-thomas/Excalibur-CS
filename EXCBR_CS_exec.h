@@ -5,18 +5,20 @@
 #ifndef __CS_EXCBR_CS_exec
 #define __CS_EXCBR_CS_exec
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+#include <fuse3/fuse_lowlevel.h>
 #include "EXCBR_CSFS_fnct.h"
 
-void
-cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf);
+#define FUSE_USE_VERSION 34
+
+void cs_exec(fuse_req_t, const cs_args_t *, void *);
 
 #ifdef __cplusplus
 }
