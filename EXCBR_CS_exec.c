@@ -49,10 +49,8 @@ cs_fptr cs_cmd[CS_FNCT_END] = {
 };
 
 void
-cs_exec(fuse_req_t req, struct fuse_file_info *fi, const void *in_buf)
+cs_exec(fuse_req_t req, struct fuse_file_info *fi, const cs_args_t *my_cs)
 {
-	cs_args_t const *my_cs = in_buf;
-
 	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
 	switch(my_cs->fct_id)
 	{
