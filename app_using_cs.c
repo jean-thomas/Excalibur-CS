@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     cs_compad.offset = 0;
     // the structure cs_compad is not preserved across ioctl call
     ret = ioctl(fd, CS_OPT, &cs_compad);
-    if (ret != 0) {
+    if (ret == -1) {
         perror("ioctl");
         exit(EXIT_FAILURE);
     }
