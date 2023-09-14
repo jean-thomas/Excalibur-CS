@@ -1,5 +1,5 @@
 /*
- *  Excalibur Computational Storage Fuse client 
+ *  Excalibur Computational Storage Fuse client
  *
  *  This file adapated from original work of Miklos Szeredi <miklos@szeredi.hu>
  */
@@ -24,7 +24,7 @@
 #include <sys/xattr.h>
 
 #include "EXCBR_CSFS_fnct.h"
-int cs_status;
+#include "EXCBR_CS_exec.h"
 
 /*
  * Command line options for Computational Storage File System
@@ -547,7 +547,7 @@ static void lo_do_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 					err = errno;
 					goto error;
 				} else {  // End of stream
-					break; 
+					break;
 				}
 			}
 		}
@@ -579,11 +579,11 @@ static void lo_do_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 						    &st, nextoff);
 		}
 		if (entsize > rem) {
-			if (entry_ino != 0) 
+			if (entry_ino != 0)
 				lo_forget_one(req, entry_ino, 1);
 			break;
 		}
-		
+
 		p += entsize;
 		rem -= entsize;
 
@@ -642,7 +642,7 @@ static void lo_create(fuse_req_t req, fuse_ino_t parent, const char *name,
 		return (void) fuse_reply_err(req, errno);
 
 	fi->fh = fd;
-	
+
 	fi->keep_cache = 1;
 
 	err = lo_do_lookup(req, parent, name, &e);
@@ -742,99 +742,33 @@ static void lo_lseek(fuse_req_t req, fuse_ino_t ino, off_t off, int whence,
 		fuse_reply_err(req, errno);
 }
 
-static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, unsigned int cmd, void *arg, struct fuse_file_info *fi, unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
+static void cs_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg, struct fuse_file_info *fi,
+					 unsigned int flags, const void *in_buf, size_t in_bufsz, size_t out_bufsz)
 {
-
-        /* read in arg */
-	struct cs_args_t const *my_cs =  (struct cs_args_t *)in_buf;
-	struct cs_args_t out_buf;
-	char *read_bf;
-
-	switch(cmd){	
+	switch (cmd)
+	{
 		case CS_OPT:
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: fct_id  : %d\n", my_cs->fct_id);
-			break;
-        default:
-			fuse_log(FUSE_LOG_DEBUG, "\n non cs ioctl: exiting \n");
-			fuse_reply_ioctl(req, EINVAL, NULL , 0);
-       		return;
-	}
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: type_t  : %d\n", my_cs->type_t);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: in_bfsz : %ld\n", my_cs->in_bfsz);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: offset : %ld\n", my_cs->offset);
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: out_bfsz: %ld\n", my_cs->out_bfsz);
+			const cs_args_t *my_cs = (const cs_args_t *)in_buf;
 
-	read_bf = malloc(1 + my_cs->in_bfsz);
-	size_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
-	if (length == -1) {
-		free (read_bf);
-		fuse_reply_ioctl(req, ENOSYS, NULL , 0);
-		return;
-	}
-	read_bf[length] = '\0'; // added just in case we want to display result on screen
+			void *read_bf = malloc(1 + my_cs->in_bfsz);
+			ssize_t length = pread(fi->fh, read_bf, my_cs->in_bfsz, my_cs->offset);
 
-	if ((my_cs->fct_id <= CS_UNDEF) || (my_cs->fct_id >= CS_FNCT_END)) {
-		fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported command: %d\n", my_cs->fct_id);
-		out_buf.type_t = CS_DOUBLE_64;
-	   	out_buf.out_bf.ui64 = ((cs_cptr_ui64_to_ui64*) cs_cmd[CS_NOP])(read_bf, my_cs->in_bfsz);
-		free (read_bf);
-		fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
-		return;
-	}
-	fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: executing command: %d: %s\n", my_cs->fct_id, CS_FNCT_NAME[my_cs->fct_id]);
-	// Calling the asked function and apply the cast in respect of type results and functiona arguments type
-	switch (my_cs->type_t) {
-/*
-		case CS_VOID:
-   	   		((cs_int_to_voidc *) cs_cmd[my_cs->fct_id])(read_bf);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: function with void return value\n", out_buf.out_bf.c);
-			break;
-*/
-		case CS_CHAR:
-   	   		out_buf.out_bf.c = ((cs_cptr_ui64_to_c *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: char : result set to %c\n", out_buf.out_bf.c);
+			if (length == -1)
+			{
+				free (read_bf);
+				fuse_reply_ioctl(req, ENOSYS, NULL , 0);
+				return;
+			}
+
+			cs_exec(req, in_buf, read_bf);
+
+			free(read_bf);
 			break;
 
-		case CS_INT_32:
-   	   		out_buf.out_bf.i32 = ((cs_cptr_ui64_to_i32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 32 : result set to %d\n", out_buf.out_bf.i32);
-			break;
-		case CS_INT_64:
-   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_i64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: int 64 : result set to %d\n", out_buf.out_bf.i64);
-			break;
-
-		case CS_UINT_32:
-   	   		out_buf.out_bf.ui32 = ((cs_cptr_ui64_to_ui32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 32 : result set to %i\n", out_buf.out_bf.ui32);
-			break;
-
-		case CS_UINT_64:
-   	   		out_buf.out_bf.i64 = ((cs_cptr_ui64_to_ui64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsigned int 64 : result set to %ld\n", (size_t) out_buf.out_bf.ui64);
-			break;
-
-		case CS_FLOAT_32:
-   	   		out_buf.out_bf.f32 =  ((cs_cptr_ui64_to_f32 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: float32 : result store as %f\n", out_buf.out_bf.f32);
-			break;
-
-		case CS_DOUBLE_64:
-   	   		out_buf.out_bf.d64 =  ((cs_cptr_ui64_to_d64 *) cs_cmd[my_cs->fct_id])(read_bf, my_cs->in_bfsz);
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: double 64 : result store as %f\n", out_buf.out_bf.d64);
-			break;
 		default:
-			fuse_log(FUSE_LOG_DEBUG, "\n cs_ioctl: unsuported output type: %d\n", my_cs->type_t);
-   	   		out_buf.out_bf.i32 = 0;
-   	   		out_buf.type_t = my_cs->type_t;
-			free (read_bf);
+			fuse_log(FUSE_LOG_DEBUG, "\nioctl cmdno: %d non existing: exiting \n", cmd);
 			fuse_reply_ioctl(req, EINVAL, NULL , 0);
-			return;
 	}
-	// send response to caller
-  	out_buf.type_t = my_cs->type_t;
-	free (read_bf);
-	fuse_reply_ioctl(req, 0, &out_buf, sizeof(struct cs_args_t));
 }
 
 static void lo_flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
@@ -858,17 +792,17 @@ static const struct fuse_lowlevel_ops lo_oper = {
 	.setattr	= lo_setattr,
 	.opendir	= lo_opendir,
 	.readdir	= lo_readdir,
-	.readdirplus	= lo_readdirplus,
+	.readdirplus = lo_readdirplus,
 	.releasedir	= lo_releasedir,
 	.create		= lo_create,
 	.open		= lo_open,
 	.release	= lo_release,
 	.read		= lo_read,
-	.write_buf      = lo_write_buf,
+	.write_buf  = lo_write_buf,
 	.statfs		= lo_statfs,
 	.lseek		= lo_lseek,
-	.flush          = lo_flush,
-	.ioctl          = cs_ioctl,
+	.flush      = lo_flush,
+	.ioctl      = cs_ioctl,
 };
 
 int main(int argc, char *argv[])

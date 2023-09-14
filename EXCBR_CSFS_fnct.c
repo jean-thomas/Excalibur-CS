@@ -1,4 +1,3 @@
-
 /*
  * Definition of the function portfolio supported by Excalibur Computational Storage
  */
@@ -8,137 +7,255 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include <assert.h>
+#include "EXCBR_CSFS_fnct.h"
 
-bool is_vowel(char c)
+static int cs_status;
+void cs_set_status(int val)
 {
-	if (c =='a' || c =='e' || c =='i' || c =='o' || c =='u' || c =='y' || c =='A' || c =='E' || c =='I' || c =='O' || c =='Y' || c =='Y')
-		return true;
-	return false;
-}
-size_t count_vowel(void * buf, size_t count)
-{
-        uint64_t i;
-        size_t vow=0;
-	char * my_buf = (char *) buf;
-
-        for (i=0; i < count; i++)
-        {
-                if (is_vowel(my_buf[i]))
-                        vow++;
-        }
-        return vow;
+    assert(val == CS_ON || val == CS_OFF);
+    cs_status = val;
+    return;
 }
 
-size_t count_consonant(void * buf, size_t count)
+int cs_get_status(void)
 {
-        uint64_t i;
-        size_t cons=0;
-	char * my_buf = (char *) buf;
-        for (i=0; i < count; i++)
-        {
-                if (!is_vowel(my_buf[i]) && ((my_buf[i] >= 'a' && my_buf[i] <= 'z') || (my_buf[i] >= 'A' && my_buf[i] <= 'Z')))
-                        cons++;
-        }
-        return cons;
+    return cs_status;
 }
 
-size_t cs_nop(int * buf, size_t count)
+static const char *CS_FNCT_NAME[CS_FNCT_END] = {
+    [CS_UNDEF]           = "CS_NOP",
+    [CS_COUNT_VOWEL]     = "CS_COUNT_VOWEL",
+    [CS_COUNT_CONSONANT] = "CS_COUNT_CONSONANT",
+    [CS_GET_STATUS]      = "CS_GET_STATUS",
+    [CS_SET_STATUS]      = "CS_SET_STATUS",
+    [CS_MAX]             = "CS_MAX",
+    [CS_MIN]             = "CS_MIN",
+    [CS_SUM]             = "CS_SUM",
+    [CS_PROD]            = "CS_PROD",
+    [CS_LAND]            = "CS_LAND",
+    [CS_LOR]             = "CS_LOR",
+    [CS_BAND]            = "CS_BAND",
+    [CS_BOR]             = "CS_BOR",
+    [CS_MAXLOC]          = "CS_MAXLOC",
+    [CS_MINLOC]          = "CS_MINLOC",
+    [CS_AVG_INT]         = "CS_AVG_INT",
+    [CS_AVG_DOUBLE]      = "CS_AVG_DOUBLE",
+    [CS_NOP]             = "CS_NOP",
+};
+
+static const char *CS_FNCT_DESC[CS_FNCT_END] = {
+    [CS_UNDEF]           = "this is not supported",
+    [CS_COUNT_VOWEL]     = "returns the number of char elt being vowel",
+    [CS_COUNT_CONSONANT] = "Returns the number of char elt being consonant",
+    [CS_GET_STATUS]      = "Set the status of Computational Storage either to CS_ON or CS_OFF",
+    [CS_SET_STATUS]      = "Retrieve the current status of Compuational Storage, either CS_ON or CS_OFF",
+    [CS_MAX]             = "Returns the maximum element.",
+    [CS_MIN]             = "Returns the minimum element.",
+    [CS_SUM]             = "Sums the elements.",
+    [CS_PROD]            = "Multiplies all elements.",
+    [CS_LAND]            = "Performs a logical and across the elements.",
+    [CS_LOR]             = "Performs a logical or across the elements.",
+    [CS_BAND]            = "Performs a bitwise and across the bits of the elements.",
+    [CS_BOR]             = "Performs a bitwise or across the bits of the elements.",
+    [CS_MAXLOC]          = "Returns the maximum value and the rank of the process that owns it.",
+    [CS_MINLOC]          = "Who knowns?",
+    [CS_AVG_INT]         = "Return the average value of length of byte seen as integer",
+    [CS_AVG_DOUBLE]      = "Return the average value of length of byte seen as double",
+    [CS_NOP]             = "Return the number of byte read",
+};
+
+const char *
+cs_get_fnct_name(size_t id)
 {
-        return (int)count;
+    assert(CS_NOP + 1);
+    return CS_FNCT_NAME[id];
 }
 
-int i_cs_average(char * buf, size_t length)
+const char *
+cs_get_fnct_desc(size_t id)
 {
-	size_t i;
-	int avg = 0;
-	int * my_buf = (int *) buf;
-	size_t count = length / sizeof(int);
-
-	if (count == 0)
-		return 0;
-
-	fprintf(stderr, "Computing integer average value for an array of %ld elements\n", count);
-        for (i = 0; i < count; i++)
-        {
-                avg += my_buf[i];
-        }
-	fprintf(stderr, "i_cs_average: sum %i\n", avg);
-	avg /= count;
-	fprintf(stderr, "i_cs_average: results %d\n", avg);
-        return avg;
+    assert(id < CS_NOP + 1);
+    return CS_FNCT_DESC[id];
 }
 
-double d_cs_average(char * buf, size_t length)
+static inline bool
+is_vowel(char c)
 {
-	size_t i;
-	double avg = 0;
-	double * my_buf = (double *) buf;
-	size_t count = length / sizeof(double);
+    if (c =='a' || c =='e' || c =='i' || c =='o' || c =='u' || c =='y' ||
+        c =='A' || c =='E' || c =='I' || c =='O' || c =='Y' || c =='Y')
+        return true;
 
-	if (count == 0)
-		return 0;
-
-	fprintf(stderr, "Computing double average value for an array of %ld elements\n", count);
-        for (i = 0; i < count; i++)
-        {
-                avg += my_buf[i];
-    }
-fprintf(stderr, "d_cs_average: sum %f\n", avg);
-avg = ((double) avg) / count;
-fprintf(stderr, "d_cs_average: results %f\n", avg);
-    return avg;
+    return false;
 }
 
-double d_cs_min(char * buf, size_t length)
+void
+count_vowel(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
-	size_t i;
-	double min = 0;
-	double * my_buf = (double *) buf;
-	size_t count = length / sizeof(double);
+    assert(in_args);
+    assert(out);
+    assert(data);
 
-	if (count == 0)
-		return 0;
-    
-    min = my_buf[0];
-    for (i = 0; i < count; i++)
+    char *my_buf = data;
+    size_t count = in_args->in_bfsz;
+
+    size_t vow = 0;
+    for (size_t i=0; i < count; i++)
     {
-	fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
+        if (is_vowel(my_buf[i]))
+            vow++;
+    }
+
+    out->out_bf.ui32 = vow;
+}
+
+void
+count_consonant(const cs_args_t *in_args, cs_args_t *out, void *data)
+{
+    assert(in_args);
+    assert(out);
+    assert(data);
+
+    char *my_buf  = data;
+    size_t count  = in_args->in_bfsz;
+
+    size_t cons = 0;
+    for (uint64_t i = 0; i < count; i++)
+    {
+        if (!is_vowel(my_buf[i]) && ((my_buf[i] >= 'a' && my_buf[i] <= 'z') ||
+            (my_buf[i] >= 'A' && my_buf[i] <= 'Z')))
+            cons++;
+    }
+
+    out->out_bf.ui32 = cons;
+}
+
+void
+cs_nop(const cs_args_t *in_args, cs_args_t *out, void *data)
+{
+    (void)in_args;
+    (void)out;
+    (void)data;
+}
+
+void
+i_cs_average(const cs_args_t *in_args, cs_args_t *out, void *data)
+{
+    assert(in_args);
+    assert(out);
+    assert(data);
+
+    int *my_buf   = data;
+    size_t length = in_args->in_bfsz;
+
+    int avg      = 0;
+    size_t count = length / sizeof(int);
+
+    if (count == 0)
+    {
+        out->out_bf.i32 = 0;
+        return;
+    }
+
+    fprintf(stderr, "Computing integer average value for an array of %ld elements\n", count);
+    for (size_t i = 0; i < count; i++)
+        avg += my_buf[i];
+
+    fprintf(stderr, "i_cs_average: sum %i\n", avg);
+    avg /= count;
+    fprintf(stderr, "i_cs_average: results %d\n", avg);
+
+    out->out_bf.i32 = avg;
+}
+
+void
+d_cs_average(const cs_args_t *in_args, cs_args_t *out, void *data)
+{
+    assert(in_args);
+    assert(out);
+    assert(data);
+
+    double *my_buf = data;
+    size_t length  = in_args->in_bfsz;
+
+    double avg   = 0;
+    size_t count = length / sizeof(double);
+
+    if (count == 0)
+    {
+        out->out_bf.d64 = 0;
+        return;
+    }
+
+    fprintf(stderr, "Computing double average value for an array of %ld elements\n", count);
+    for (size_t i = 0; i < count; i++)
+    {
+        avg += my_buf[i];
+    }
+
+    fprintf(stderr, "d_cs_average: sum %f\n", avg);
+    avg = ((double) avg) / count;
+    fprintf(stderr, "d_cs_average: results %f\n", avg);
+
+    out->out_bf.d64 = avg;
+}
+
+void
+d_cs_min(const cs_args_t *in_args, cs_args_t *out, void *data)
+{
+    assert(in_args);
+    assert(out);
+    assert(data);
+
+    double *my_buf = data;
+    size_t length  = in_args->in_bfsz;
+    size_t count = length / sizeof(double);
+
+    if (count == 0)
+    {
+        out->out_bf.d64 = 0;
+        return;
+    }
+
+    double min = my_buf[0];
+    for (size_t i = 0; i < count; i++)
+    {
+        fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
         if (min > my_buf[i])
             min = my_buf[i];
     }
-
-	fprintf(stderr, "d_cs_min: min %f\n", min);
-    return min;
+    out->out_bf.d64 = min;
 }
 
-double d_cs_max(char * buf, size_t length)
+void
+d_cs_max(const cs_args_t *in_args, cs_args_t *out, void *data)
 {
-	size_t i;
-	double max = 0;
-	double * my_buf = (double *) buf;
-	size_t count = length / sizeof(double);
+    assert(in_args);
+    assert(out);
+    assert(data);
+    assert(out);
 
-	if (count == 0)
-		return 0;
-    
-    max = my_buf[0];
-    for (i = 0; i < count; i++)
+    double *my_buf = data;
+    size_t length  = in_args->in_bfsz;
+
+    size_t count = length / sizeof(double);
+
+    if (count == 0)
     {
-	fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
-        if (max < my_buf[i])
-            max = my_buf[i];
+        out->out_bf.d64 = 0;
+        return;
     }
 
-	fprintf(stderr, "d_cs_max: max %f\n", max);
-    return max;
-}
-size_t find_first_occurence(void * buf, size_t count, char * pattern)
-{
-        char *ptr;
-	char * my_buf = (char *) buf;
-        ptr=strstr(my_buf, pattern);
+    double max = my_buf[0];
+    for (size_t i = 0; i < count; i++)
+    {
+        fprintf(stderr, "Element %ld set to %f\n", i, my_buf[i]);
+        if (max < my_buf[i])
+           max = my_buf[i];
+    }
 
-        if (ptr != NULL)
-                return (ptr - my_buf);
-        else return 0;
+    fprintf(stderr, "d_cs_max: max %f\n", max);
+
+    out->out_bf.d64 = max;
 }
